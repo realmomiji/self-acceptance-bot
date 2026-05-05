@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>自己受容BOT</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f5f0;
+      --ink: #28231f;
+      --muted: #6f6860;
+      --line: #ddd5cb;
+      --panel: #fffdf8;
+      --accent: #2f7d69;
+      --accent-dark: #1f5e4e;
+      --soft: #e7f2ee;
+      --warn: #b45b38;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(100%, 520px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      padding: 8px 2px 0;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .bot {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-top: 4px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .bubble {
+      min-height: 160px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(60, 45, 30, 0.08);
+    }
+
+    .label {
+      margin-bottom: 10px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    #phrase {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.65;
+      font-weight: 700;
+    }
+
+    .repeat {
+      display: none;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .repeat.show {
+      display: block;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      min-height: 48px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button.secondary {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+    }
+
+    section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    h2 {
+      margin: 4px 0 0;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .moods {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .moods button {
+      background: var(--soft);
+      color: var(--accent-dark);
+    }
+
+    .log {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, 0.68);
+    }
+
+    .log p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 88px;
+      resize: vertical;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      outline: 3px solid rgba(47, 125, 105, 0.18);
+      border-color: var(--accent);
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 360px) {
+      main {
+        padding-inline: 12px;
+      }
+
+      #phrase {
+        font-size: 19px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>自己受容BOT</h1>
+      <p class="sub">今の自分を責める前に、短い言葉をひとつ差し込みます。</p>
+    </header>
+
+    <div class="bot" aria-live="polite">
+      <div class="avatar">受</div>
+      <div class="bubble">
+        <div class="label" id="modeLabel">今日の一言</div>
+        <p id="phrase"></p>
+        <div class="repeat" id="repeatText"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="randomBtn">次の言葉</button>
+      <button class="secondary" id="repeatBtn">3回反復</button>
+    </div>
+
+    <section>
+      <h2>今の気分</h2>
+      <div class="moods">
+        <button data-mood="anxiety">不安</button>
+        <button data-mood="selfBlame">自己否定</button>
+        <button data-mood="failure">失敗</button>
+        <button data-mood="tired">疲れた</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>ひとこと入力</h2>
+      <textarea id="note" placeholder="例：また失敗して、自分が嫌になった"></textarea>
+      <button class="secondary" id="reframeBtn">自己受容の言葉に変える</button>
+      <div class="log">
+        <p id="reframeResult">入力すると、責める言葉を少しやわらかく言い換えます。</p>
+      </div>
+    </section>
+
+    <p class="tiny">これは簡易プロトタイプです。医療的な診断や治療ではなく、日々のセルフトークを整えるための小さな道具として使ってください。</p>
+  </main>
+
+  <script>
+    const phrases = [
+      "「今、私はこう感じている」と、事実だけを実況してみましょう。",
+      "私は、今の私を敵にしない。どんな状態でも、まず味方でいます。",
+      "「私はダメだ」ではなく、「私は自分をダメだと思う思考を持っている」と置き換えます。",
+      "失敗は人格の判決ではなく、次に使えるデータです。",
+      "自己受容できない自分に気づいた時こそ、「そんな自分も、まあ、あるよね」と受け止めます。",
+      "不安を感じるのは、脳の警戒システムが働いているだけ。私は壊れていません。",
+      "今の不完全な状態こそ、人間らしさの証です。",
+      "どんなに迷走した自分でも、いつでも自分の元へ帰ってきていい。",
+      "調子が良い時も悪い時も、それが自然な波だと受け流します。",
+      "私は今日、自分を見捨てないことを最優先にします。"
+    ];
+
+    const moodPhrases = {
+      anxiety: [
+        "不安があっても大丈夫。不安と一緒に、今できる呼吸だけをします。",
+        "未来を全部解決しなくていい。今この瞬間の私を守ればいい。",
+        "不安は敵ではなく、守ろうとしてくれている反応です。"
+      ],
+      selfBlame: [
+        "責める声が出てきても、それは古い防衛パターンです。今の私の価値ではありません。",
+        "自分を責めたくなったら、「それでも生き抜いてきた」と一度だけ認めます。",
+        "私は、自分を責める代わりに、何がつらかったのかを見ます。"
+      ],
+      failure: [
+        "失敗した私は、価値が下がった私ではなく、経験を得た私です。",
+        "うまくいかなかったことを、人格ではなくデータとして扱います。",
+        "今日の失敗を、明日の自分への材料に変えていきます。"
+      ],
+      tired: [
+        "疲れている私は、怠けている私ではなく、回復を必要としている私です。",
+        "何も進まない日にも、呼吸している私は十分にえらい。",
+        "休むことは、止まることではなく、自分を続ける準備です。"
+      ]
+    };
+
+    const labels = {
+      anxiety: "不安のとき",
+      selfBlame: "自己否定のとき",
+      failure: "失敗したとき",
+      tired: "疲れたとき"
+    };
+
+    const phraseEl = document.getElementById("phrase");
+    const modeLabel = document.getElementById("modeLabel");
+    const repeatText = document.getElementById("repeatText");
+    const note = document.getElementById("note");
+    const reframeResult = document.getElementById("reframeResult");
+
+    let currentPhrase = "";
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function setPhrase(text, label) {
+      currentPhrase = text;
+      modeLabel.textContent = label;
+      phraseEl.textContent = text;
+      repeatText.classList.remove("show");
+      repeatText.textContent = "";
+    }
+
+    function showRandom() {
+      setPhrase(pick(phrases), "今日の一言");
+    }
+
+    document.getElementById("randomBtn").addEventListener("click", showRandom);
+
+    document.getElementById("repeatBtn").addEventListener("click", () => {
+      repeatText.innerHTML = [currentPhrase, currentPhrase, currentPhrase]
+        .map((text, index) => `${index + 1}. ${text}`)
+        .join("<br>");
+      repeatText.classList.add("show");
+    });
+
+    document.querySelectorAll("[data-mood]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mood = button.dataset.mood;
+        setPhrase(pick(moodPhrases[mood]), labels[mood]);
+      });
+    });
+
+    document.getElementById("reframeBtn").addEventListener("click", () => {
+      const text = note.value.trim();
+      if (!text) {
+        reframeResult.textContent = "まず、今の気持ちを一言だけ入れてみてください。";
+        return;
+      }
+
+      reframeResult.textContent =
+        `「${text}」と思うくらい、今の私はつらさを感じている。` +
+        " でも、その思考があることと、私の価値は別のもの。まずは今の私を見捨てずに、ここに戻ってきます。";
+    });
+
+    showRandom();
+  </script>
+</body>
+</html>
