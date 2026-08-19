@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心のお守りBOT 〜自己受容と稼働の羅針盤〜</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #FAF8F5;
+      --card-bg: #FFFFFF;
+      --text-main: #2D312E;
+      --text-sub: #768078;
+      --accent: #5B8C71;
+      --accent-hover: #467059;
+      --accent-light: #EBF3EE;
+      --border-color: #E6E2DC;
+      --shadow: 0 10px 30px rgba(45, 49, 46, 0.06);
+      --card-radius: 24px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #171A18;
+        --card-bg: #232724;
+        --text-main: #F2F4F2;
+        --text-sub: #9EAAA0;
+        --accent: #76AB8E;
+        --accent-hover: #8EC2A5;
+        --accent-light: #2A3830;
+        --border-color: #333934;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .category-tabs {
+      display: flex;
+      background: var(--card-bg);
+      padding: 4px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+      gap: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: var(--text-sub);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(91, 140, 113, 0.3);
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow);
+      padding: 44px 32px 36px;
+      width: 100%;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .card:active {
+      transform: scale(0.99);
+    }
+
+    .progress-bar-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .progress-bar-container.active {
+      opacity: 1;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.1s linear;
+    }
+
+    .category-badge {
+      position: absolute;
+      top: 18px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+
+    .quote-text {
+      font-size: 1.35rem;
+      line-height: 1.8;
+      font-weight: 700;
+      color: var(--text-main);
+      transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      word-break: auto-phrase;
+      margin: 16px 0;
+    }
+
+    .quote-text.fade {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+
+    .card-footer {
+      position: absolute;
+      bottom: 14px;
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      opacity: 0.7;
+    }
+
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .main-controls {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 420px;
+      justify-content: center;
+    }
+
+    .next-btn {
+      flex: 1;
+      background-color: var(--accent);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 30px;
+      font-family: inherit;
+      font-size: 1.02rem;
+      font-weight: 700;
+      padding: 15px 24px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(91, 140, 113, 0.25);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .next-btn:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(91, 140, 113, 0.35);
+    }
+
+    .auto-btn {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 15px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .auto-btn.playing {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .sub-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-family: inherit;
+      color: var(--text-sub);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .speed-select {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-family: inherit;
+      color: var(--text-sub);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      background: rgba(45, 49, 46, 0.9);
+      color: #FFF;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 480px) {
+      .quote-text {
+        font-size: 1.15rem;
+        line-height: 1.7;
+      }
+      .card {
+        padding: 38px 20px 32px;
+        min-height: 220px;
+      }
+      .main-controls {
+        flex-direction: column;
+      }
+      .category-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="app-title">🌿 心と稼働の羅針盤 BOT</div>
+      
+      <div class="category-tabs">
+        <button class="tab-btn active" data-category="all">すべて</button>
+        <button class="tab-btn" data-category="self">💖 自己受容</button>
+        <button class="tab-btn" data-category="delivery">🛵 稼働鉄則</button>
+        <button class="tab-btn" data-category="question">❓ 今日の問い</button>
+      </div>
+    </header>
+
+    <main class="card" id="quoteCard" title="タップして次の言葉へ">
+      <div class="progress-bar-container" id="progressBarContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="category-badge" id="categoryBadge">💖 自己受容</div>
+      <div class="quote-text" id="quoteText">画面をタップするか「次へ」を押してね</div>
+      <div class="card-footer" id="cardFooter">タップ または Spaceキーで次へ</div>
+    </main>
+
+    <div class="action-group">
+      <div class="main-controls">
+        <button class="next-btn" id="nextBtn">
+          <span>次のお守り言葉</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <button class="auto-btn" id="autoBtn">
+          <span id="autoIcon">▶</span>
+          <span id="autoText">自動再生</span>
+        </button>
+      </div>
+
+      <div class="sub-actions">
+        <select class="speed-select" id="speedSelect" title="自動再生の切り替え間隔">
+          <option value="4000">速さ: 4秒</option>
+          <option value="7000" selected>速さ: 7秒</option>
+          <option value="12000">速さ: 12秒</option>
+          <option value="20000">速さ: 20秒（ゆったり）</option>
+        </select>
+
+        <button class="icon-btn" id="copyBtn">
+          📋 コピー
+        </button>
+        <button class="icon-btn" id="soundToggle">
+          🔔 音: ON
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">コピーしました！</div>
+
+  <script>
+    const PHRASES = [
+      // 💖 自己受容・アファメーション・メンタルケア
+      { text: "私はありのままの自分を愛しています。", category: "self", badge: "💖 自己受容" },
+      { text: "私には自分を大切にする価値があります。", category: "self", badge: "💖 自己受容" },
+      { text: "私は世界にとってとても意味がある存在です。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分の心と体を大切にします。創造主からのプレゼントだからです。", category: "self", badge: "💖 自己受容" },
+      { text: "私は今この瞬間に感謝しています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分を受け入れ、今ここを生きています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分の感情も素直に受け入れます。", category: "self", badge: "💖 自己受容" },
+      { text: "私は完全主義を手放します。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分の光と影、すべてを愛します。", category: "self", badge: "💖 自己受容" },
+      { text: "まええやんな、これが俺やし。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分の人生を選び取る力を持っています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は困難を乗り越える力を持っています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分に優しくする時間を持っています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分の心の声を大切にします。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分を信じます。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分を無条件に許します。", category: "self", badge: "💖 自己受容" },
+      { text: "私は愛と調和に包まれています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は心の平和を選びます。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分を癒す力を持っています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は人と比べず、自分自身と向き合っています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は今の自分に心から感謝しています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分を誇りに思っています。", category: "self", badge: "💖 自己受容" },
+      { text: "私は安心して自分らしく生きます。", category: "self", badge: "💖 自己受容" },
+      { text: "私は自分に対して愛のある選択をします。なぜなら私は愛そのものだからです。", category: "self", badge: "💖 自己受容" },
+      { text: "「今、私はこう感じている」と事実だけを実況中継し、感情にネガティブなレッテルを貼るのをやめましょう。", category: "self", badge: "🌿 メンタルケア" },
+      { text: "「諸行無常」を思い出し、今の苦しみも変化し続けるプロセスの一部として眺めてみてください。", category: "self", badge: "🌿 メンタルケア" },
+      { text: "自分の中の嫌いな部分も、自分を守るための素朴な機能として捉え直してみましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "「私はダメだ」を「私は、自分をダメだという思考を持っている」という客観的事実に置き換えてみてください。", category: "self", badge: "🧠 メタ認知" },
+      { text: "どうにもならない状況に直面したとき、それに抵抗せず一度手放す練習をしてみましょう。", category: "self", badge: "🌿 メンタルケア" },
+      { text: "朝起きたとき、鏡に映る自分に「今日も、どんなあなたでも私はあなたの味方だよ」と声をかけてあげてください。", category: "self", badge: "💖 セルフコンパッション" },
+      { text: "「自分が自分の味方でなければ、誰が味方になってくれるのか」を、生存の基本原則として心に刻みましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "「頭の中の批判する声」が聴こえたら、小さな子どものわがままだと思って聞き流してください。", category: "self", badge: "🧠 メタ認知" },
+      { text: "不安を感じるのは、脳の警戒システム（扁桃体）が正常に作動している証拠です。", category: "self", badge: "🧠 扁桃体ハック" },
+      { text: "親友にかけるような優しい言葉を、自分自身に贈ってください。", category: "self", badge: "💖 セルフコンパッション" },
+      { text: "「自分を責める」行為は、過去の古い防衛パターンの残りカスだと割り切って捨ててみましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "「不完全である勇気」を持ち、今の不完全さこそが人間らしさだと定義し直してください。", category: "self", badge: "💖 自己受容" },
+      { text: "瞑想中の雑念は、空に浮かぶ雲のように、ただ「流れていくもの」として追いかけない練習をしましょう。", category: "self", badge: "🌿 マインドフルネス" },
+      { text: "自分を否定したくなった時、「今日まで生き抜いてきた生命力はすごいよな」と自分を讃えましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "どんなに迷走した自分であっても、いつでも自分自身の元へ帰ってきて良いと許可しましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "「べき」という言葉を、「〜したい（欲求）」か「ま、いっか（受容）」に置き換える習慣をつけましょう。", category: "self", badge: "🌿 メンタルケア" },
+      { text: "自己受容は「諦め」ではなく、次のステップに進むための「現在地の確認」です。", category: "self", badge: "💖 自己受容" },
+      { text: "怒りや嫉妬が湧いたとき、排除せず「それだけ一生懸命生きているんだな」と情熱の表れとして認めましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "呼吸が肺に入り出ていく感覚だけに集中し、ただ「存在していること」を肯定してください。", category: "self", badge: "🌿 マインドフルネス" },
+      { text: "失敗した時は「これは貴重なデータ収集だ」と、科学者のようなドライな視点で評価から解放されましょう。", category: "self", badge: "🧠 メタ認知" },
+      { text: "「私は私のままでいい」に違和感があるなら、「私は今の私以外にはなれない」という物理的事実を認めてください。", category: "self", badge: "💖 自己受容" },
+      { text: "1日の終わりに、できたことではなく「嫌なことがあったのに、自分を見捨てなかったこと」を最大限に評価しましょう。", category: "self", badge: "💖 セルフコンパッション" },
+      { text: "自分のハードな性質は呪いではなく、使いこなすべき「高出力のエンジン」です。", category: "self", badge: "💖 自己受容" },
+      { text: "「自己受容できない自分」に気づいた時こそ最大のチャンスです。「そんな自分も、ま、ええか」と二重に受容しましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "どんな過去があろうとも、今この瞬間「呼吸」ができている自分は、生きていることに値します。", category: "self", badge: "💖 自己受容" },
+      { text: "豊かさとは、何も持っていない時でも「自分はこれでええやん」と言える心の筋肉のことです。", category: "self", badge: "💖 自己受容" },
+      { text: "外側の豊かさを増やす前に、内側の「自分という存在」を無条件で認める投資が最優先事項です。", category: "self", badge: "💖 自己受容" },
+      { text: "お金があると悩みは消えると思いがちですが、心のOSを書き換えない限り、不安の場所が変わるだけです。", category: "self", badge: "💖 自己受容" },
+      { text: "「臆病さ」や「不安」はかつて自分を救った生存戦略の証であり、あなたの欠点は愛すべき適応性です。", category: "self", badge: "💖 自己受容" },
+      { text: "現代の生きづらさは「数万年前の脳で現代を生きるギャップ」によるものであり、あなたのせいではありません。", category: "self", badge: "🧠 扁桃体ハック" },
+      { text: "人生を「被害者の記録」ではなく、初期設定を乗り越えて生き抜く「英雄の旅」と再定義しましょう。", category: "self", badge: "💖 自己受容" },
+      { text: "欠けた器に美を見出す「侘び寂び」のように、心の傷を唯一無二の風合いとして美学的に肯定しましょう。", category: "self", badge: "💖 自己受容" },
+
+      // 🛵 稼働鉄則・超純利防衛
+      { text: "（受諾間空走距離）を削り倒せ。それが（超純利）を守る唯一の盾。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "（受諾間時間）の伸びを恐れるな。バイクが止まっていれば経費はゼロ（減価償却ゼロ、体力とガソリンの温存）。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "焦って動けば（稼働密度）は上がるが、（実時給）は壊滅する。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "「動いて赤字」か「止まってゼロ」か。暇な日は迷わず「止まってゼロ」を選べ。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "走れば「15円/km」が消える。動かないことが最強のコストカット。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "ウーバーのAIに付き合うな。（受諾間空走距離）を増やすアルゴリズムを拒絶せよ。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "「鳴らない＝負け」ではない。「鳴らないのに走る＝大赤字」である。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "ドロップ先で次を待て。自陣への帰り道に無駄な空走距離を作るな。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "自陣マックへ近づく案件なら、低単価でも空走距離の削減効果で即取り（無料移動チケット）。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "自陣マックの引力圏外へ飛ばす案件は、すべて超純利を食い潰す敵。ロング拒否はリスク管理。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "暇な日は中心の極小円（1〜2km圏内）だけが主戦場。近所のマックに地蔵せよ。", category: "delivery", badge: "🛵 稼働鉄則" },
+      { text: "日報の数式（空走距離と待機時間）こそが、感情的な暴走を止めるブレーキ。", category: "delivery", badge: "🛵 稼働鉄則" },
+
+      // ❓ 今日の問いかけ（ジャーナリング）
+      { text: "今日、自分のためにできる親切なことは1つ何ですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "今日、1日を生き延びた自分にどんな言葉をかけてあげたいですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "手放すことができる1つの思い込みや荷物は何ですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "今日当たり前だと思っている、身近な小さな恵みは何ですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "同じ状況にいる大好きな親友に、あなたならどんな言葉をかけますか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "今日を1％良くするために、今すぐできる小さな工夫は何ですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "自分のコントロール下にある3つのことは何ですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "生き延びてきたのに、自分がまだ十分認めてあげていない実績は何ですか？", category: "question", badge: "❓ 今日の問い" },
+      { text: "今朝、目覚めた瞬間に感謝したことは何ですか？", category: "question", badge: "❓ 今日の問い" }
+    ];
+
+    let currentCategory = 'all';
+    let lastIndex = -1;
+    let soundEnabled = true;
+    let isAutoPlaying = false;
+    let autoTimer = null;
+    let progressInterval = null;
+    let progressStartTime = 0;
+    let duration = 7000;
+
+    const quoteText = document.getElementById('quoteText');
+    const categoryBadge = document.getElementById('categoryBadge');
+    const quoteCard = document.getElementById('quoteCard');
+    const nextBtn = document.getElementById('nextBtn');
+    const autoBtn = document.getElementById('autoBtn');
+    const autoIcon = document.getElementById('autoIcon');
+    const autoText = document.getElementById('autoText');
+    const speedSelect = document.getElementById('speedSelect');
+    const copyBtn = document.getElementById('copyBtn');
+    const soundToggle = document.getElementById('soundToggle');
+    const toast = document.getElementById('toast');
+    const tabs = document.querySelectorAll('.tab-btn');
+    const progressBar = document.getElementById('progressBar');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const cardFooter = document.getElementById('cardFooter');
+
+    // 穏やかなチャイム音（Web Audio API）
+    function playChime() {
+      if (!soundEnabled) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(528, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(792, ctx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (e) {
+        // audio error fallback
+      }
+    }
+
+    function getFilteredPhrases() {
+      if (currentCategory === 'all') return PHRASES;
+      return PHRASES.filter(p => p.category === currentCategory);
+    }
+
+    function displayRandomQuote(resetProgress = true) {
+      const filtered = getFilteredPhrases();
+      if (filtered.length === 0) return;
+
+      let newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * filtered.length);
+      } while (filtered.length > 1 && newIndex === lastIndex);
+
+      lastIndex = newIndex;
+      const item = filtered[newIndex];
+
+      quoteText.classList.add('fade');
+      
+      setTimeout(() => {
+        quoteText.textContent = item.text;
+        categoryBadge.textContent = item.badge;
+        quoteText.classList.remove('fade');
+        playChime();
+        if (navigator.vibrate) navigator.vibrate(12);
+
+        if (isAutoPlaying && resetProgress) {
+          restartProgressBar();
+        }
+      }, 240);
+    }
+
+    function startAutoPlay() {
+      isAutoPlaying = true;
+      autoBtn.classList.add('playing');
+      autoIcon.textContent = '⏸';
+      autoText.textContent = '一時停止';
+      progressBarContainer.classList.add('active');
+      cardFooter.textContent = '自動再生中（クリックで一時停止）';
+      restartProgressBar();
+    }
+
+    function stopAutoPlay() {
+      isAutoPlaying = false;
+      autoBtn.classList.remove('playing');
+      autoIcon.textContent = '▶';
+      autoText.textContent = '自動再生';
+      progressBarContainer.classList.remove('active');
+      progressBar.style.width = '0%';
+      cardFooter.textContent = 'タップ または Spaceキーで次へ';
+      if (progressInterval) clearInterval(progressInterval);
+      if (autoTimer) clearTimeout(autoTimer);
+    }
+
+    function restartProgressBar() {
+      if (progressInterval) clearInterval(progressInterval);
+      if (autoTimer) clearTimeout(autoTimer);
+
+      progressStartTime = Date.now();
+      duration = parseInt(speedSelect.value, 10);
+      progressBar.style.width = '0%';
+
+      progressInterval = setInterval(() => {
+        const elapsed = Date.now() - progressStartTime;
+        const percent = Math.min((elapsed / duration) * 100, 100);
+        progressBar.style.width = percent + '%';
+
+        if (percent >= 100) {
+          clearInterval(progressInterval);
+          displayRandomQuote(true);
+        }
+      }, 50);
+    }
+
+    function toggleAutoPlay() {
+      if (isAutoPlaying) {
+        stopAutoPlay();
+      } else {
+        startAutoPlay();
+      }
+    }
+
+    nextBtn.addEventListener('click', () => displayRandomQuote());
+    quoteCard.addEventListener('click', () => displayRandomQuote());
+    autoBtn.addEventListener('click', toggleAutoPlay);
+
+    speedSelect.addEventListener('change', () => {
+      duration = parseInt(speedSelect.value, 10);
+      if (isAutoPlaying) {
+        restartProgressBar();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        displayRandomQuote();
+      }
+    });
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentCategory = tab.dataset.category;
+        lastIndex = -1;
+        displayRandomQuote();
+      });
+    });
+
+    copyBtn.addEventListener('click', () => {
+      const textToCopy = quoteText.textContent;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        toast.textContent = "お守り言葉をコピーしました 📋";
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    });
+
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? "🔔 音: ON" : "🔕 音: OFF";
+    });
+
+    displayRandomQuote(false);
+  </script>
+</body>
+</html>
